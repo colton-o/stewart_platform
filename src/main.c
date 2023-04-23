@@ -12,10 +12,10 @@
 #define MAXPULSE 2000
 #define MIDPULSE 1500
 
-#define SLEEP_TIME_S .5
+#define SLEEP_TIME_S 1
 
-const struct pwm_dt_spec pwm_led = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led0));
-const struct pwm_dt_spec other = PWM_DT_SPEC_GET(DT_ALIAS(pwm_01));
+const struct pwm_dt_spec servo_01 = PWM_DT_SPEC_GET(DT_ALIAS(alpha));
+// const struct pwm_dt_spec other = PWM_DT_SPEC_GET(DT_LABEL(pwm_beta));
 
 void PWM_control(uint8_t *dir, uint32_t *pulse_width)
 {
@@ -47,9 +47,9 @@ void main(void)
 	{
 		printk("PWM device cycle\n");
 
-		pwm_set(pwm_led.dev, 0, PWM_USEC(PERIOD), PWM_USEC(MAXPULSE), 0);
-		pwm_set(pwm_led.dev, 1, PWM_USEC(PERIOD), PWM_USEC(MINPULSE), 0);
-		pwm_set(other.dev, 0, PWM_USEC(PERIOD), PWM_USEC(MAXPULSE), 0);
+		pwm_set(servo_01.dev, 0, PWM_USEC(PERIOD), PWM_USEC(MAXPULSE), 0);
+		// pwm_set(pwm_led.dev, 1, PWM_USEC(PERIOD), PWM_USEC(MINPULSE), 0);
+		// pwm_set(other.dev, 0, PWM_USEC(PERIOD), PWM_USEC(MAXPULSE), 0);
 		get_degrees(&degrees, &pulse_width);
 
 		printk("PWM pulse width: %d\n", pulse_width);
