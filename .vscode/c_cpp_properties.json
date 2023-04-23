@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "/home/colton/SDKs/ncs/zephyr/include",
-                "${workspaceFolder}/build/zephyr/include/generated"
+                "${workspaceFolder}/build/zephyr/include/generated",
+                "/home/colton/ncs/zephyr/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
