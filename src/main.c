@@ -27,9 +27,10 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE}};
 
 void set_Servos(servo *servos) {
+  printk("Settign Servos");
   for (int i = 0; i < SERVO_NUM; i++) {
     pwm_set(servos[i].name.dev, servos[i].name.channel, PWM_USEC(PERIOD),
-            servos[i].pulse, 0);
+            PWM_USEC(servos[i].pulse), 0);
   }
 }
 uint32_t angle_to_pulse(uint8_t angle) {
