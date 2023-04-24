@@ -14,47 +14,34 @@
 #define SLEEP_TIME_S 1
 #define SERVO_NUM 6
 
-const struct pwm_dt_spec servos[SERVO_NUM] = {
-    PWM_DT_SPEC_GET(DT_ALIAS(alpha)),   PWM_DT_SPEC_GET(DT_ALIAS(beta)),
-    PWM_DT_SPEC_GET(DT_ALIAS(gamma)),   PWM_DT_SPEC_GET(DT_ALIAS(delta)),
-    PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), PWM_DT_SPEC_GET(DT_ALIAS(zeta))};
+typedef struct {
+  const struct pwm_dt_spec name;
+  uint32_t pulse;
+} servo;
 
-void PWM_control(uint8_t *dir, uint32_t *pulse_width) {
-  if (*dir == 1U) {
-    *pulse_width = 1500;
-    *dir = 0;
-  } else if (*dir == 0U) {
-    *pulse_width = MINPULSE;
-    *dir = 1;
-  }
-}
+servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(beta)), MINPULSE},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(gamma)), MINPULSE},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(delta)), MINPULSE},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE}};
 
-void get_degrees(uint8_t *degrees, uint32_t *pulse_width) {
-  *degrees = (uint8_t)((float)(*pulse_width - MINPULSE) /
-                       (float)(MAXPULSE - MINPULSE) * 90.0);
+uint32_t angle_to_pulse(uint8_t angle) {
+  float angle_pct = ((float)angle / 90.0f);
+  uint32_t pulse = MINPULSE + (angle_pct * (MAXPULSE - MINPULSE));
+  return pulse;
 }
 
 void main(void) {
   printk("lets begin \n");
-  uint32_t pulse_width = MINPULSE;
-  uint8_t dir = 0U;
-  uint8_t degrees = 0U;
   while (1) {
     printk("PWM device cycle\n");
     for (int i = 0; i < SERVO_NUM; i++) {
-      pwm_set(servos[i].dev, servos[i].channel, PWM_USEC(PERIOD),
-              PWM_USEC(MINPULSE + (200 * i)), 0);
+      int pulse = angle_to_pulse(40 + (i * 10));
+      servos[i].pulse = pulse;
+      pwm_set(servos[i].name.dev, servos[i].name.channel, PWM_USEC(PERIOD),
+              servos[i].pulse, 0);
     }
-
-    get_degrees(&degrees, &pulse_width);
-
-    printk("PWM pulse width: %d\n", pulse_width);
-    printk("Degrees: %d\n", degrees);
-
-    // PWM_control(&dir, &pulse_width);
-
-    printk("\n");
-
     k_sleep(K_SECONDS(SLEEP_TIME_S));
   }
 }
