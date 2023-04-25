@@ -78,7 +78,7 @@ Then I outputted each PWM signal to pins 1.4 - 1.9
 ### Testing Servos
 Once I had the device tree configured I went on to test each servo could run inpendantly.
 
-''' 
+``` 
 typedef struct {
   const struct pwm_dt_spec name;
   uint32_t pulse;
@@ -90,6 +90,7 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(delta)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE}};
-'''
+```
+
 
 
