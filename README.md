@@ -14,7 +14,7 @@ nrf5340 dev-kit
 
 ### Setting up devices
 NRF5340 has 4 pwm generators each with four channels, so I mapped 6 signals to corrospond with six servos, by using 3 generators, with 2 channels each. 
-'{
+`{
     mypwms{
         compatible = "pwm-leds";
         pwm_alpha: pwm_alpha{
@@ -41,11 +41,11 @@ NRF5340 has 4 pwm generators each with four channels, so I mapped 6 signals to c
             status = "okay";
 		    pwms = <&pwm2 1 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
 	    };
-    }; '
+    }; `
 
 Then I outputted each PWM signal to pins 1.4 - 1.9 
 
-'
+```
 &pwm0_default {
     group1 {
         psels = <NRF_PSEL(PWM_OUT0, 1, 4)>, <NRF_PSEL(PWM_OUT1, 1, 5)>;
@@ -64,7 +64,7 @@ Then I outputted each PWM signal to pins 1.4 - 1.9
             psels = <NRF_PSEL(PWM_OUT0, 1, 8)>, <NRF_PSEL(PWM_OUT1, 1, 9)>;
         };
     };
-}; '
+}; ```
 
 
 ### Testing Servos
