@@ -52,7 +52,7 @@ NRF5340 has 4 pwm generators each with four channels I made a overlay file and m
 ```
 Then I outputted each PWM signal to pins 1.4 - 1.9 
 
-```
+``` c
 &pwm0_default {
   group1 {
   psels = <NRF_PSEL(PWM_OUT0, 1, 4)>, <NRF_PSEL(PWM_OUT1, 1, 5)>;
@@ -78,7 +78,7 @@ Then I outputted each PWM signal to pins 1.4 - 1.9
 ### Testing Servos
 Once I had the device tree configured I went on to test each servo could run inpendantly.
 
-``` 
+``` c
 typedef struct {
   const struct pwm_dt_spec name;
   uint32_t pulse;
@@ -91,6 +91,4 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE}};
 ```
-
-
 
