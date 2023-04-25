@@ -18,13 +18,13 @@ nrf5340 dev-kit
 ### Setting up devices
 
 |Signal|Channel|Label|Pin|
-|----|---|--------|---|
-|&pwm0|0|pwm_alpha|1.4|
-|&pwm0|1|pwm_beta|1.5|
-|&pwm1|0|pwm_gamma|1.6|
-|&pwm1|1|pwm_delta|1.7|
+|-----|-|-----------|---|
+|&pwm0|0|pwm_alpha  |1.4|
+|&pwm0|1|pwm_beta   |1.5|
+|&pwm1|0|pwm_gamma  |1.6|
+|&pwm1|1|pwm_delta  |1.7|
 |&pwm2|0|pwm_epsilon|1.8|
-|&pwm2|1|pwm_zeta|1.9|
+|&pwm2|1|pwm_zeta   |1.9|
 
 NRF5340 has 4 pwm generators each with four channels I made a overlay file and mapped 6 signals to corrospond with six servos, by using 3 generators, with 2 channels each.
 
