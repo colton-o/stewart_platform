@@ -14,8 +14,7 @@
 #define SLEEP_TIME_S 1
 #define SERVO_NUM 6
 
-typedef struct
-{
+typedef struct {
   const struct pwm_dt_spec name;
   uint32_t pulse;
 } servo;
@@ -27,27 +26,22 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE}};
 
-void set_Servos(servo *servos)
-{
+void set_Servos(servo *servos) {
   printk("Settign Servos");
-  for (int i = 0; i < SERVO_NUM; i++)
-  {
+  for (int i = 0; i < SERVO_NUM; i++) {
     pwm_set(servos[i].name.dev, servos[i].name.channel, PWM_USEC(PERIOD),
             PWM_USEC(servos[i].pulse), 0);
   }
 }
-uint32_t angle_to_pulse(uint8_t angle)
-{
+uint32_t angle_to_pulse(uint8_t angle) {
   float angle_pct = ((float)angle / 90.0f);
   uint32_t pulse = MINPULSE + (angle_pct * (MAXPULSE - MINPULSE));
   return pulse;
 }
 
-void main(void)
-{
+void main(void) {
   printk("lets begin \n");
-  while (1)
-  {
+  while (1) {
     printk("PWM device cycle\n");
 
     if (servos[0].pulse == MAXPULSE)
