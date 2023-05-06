@@ -17,14 +17,14 @@ nrf5340 dev-kit
 
 ### Setting up devices
 
-|Signal|Channel|Label|Pin|
-|-----|-|-----------|---|
-|&pwm0|0|pwm_alpha  |1.4|
-|&pwm0|1|pwm_beta   |1.5|
-|&pwm1|0|pwm_gamma  |1.6|
-|&pwm1|1|pwm_delta  |1.7|
-|&pwm2|0|pwm_epsilon|1.8|
-|&pwm2|1|pwm_zeta   |1.9|
+| Signal | Channel | Label       | Pin |
+| ------ | ------- | ----------- | --- |
+| &pwm0  | 0       | pwm_alpha   | 1.4 |
+| &pwm0  | 1       | pwm_beta    | 1.5 |
+| &pwm1  | 0       | pwm_gamma   | 1.6 |
+| &pwm1  | 1       | pwm_delta   | 1.7 |
+| &pwm2  | 0       | pwm_epsilon | 1.8 |
+| &pwm2  | 1       | pwm_zeta    | 1.9 |
 
 NRF5340 has 4 pwm generators each with four channels I made a overlay file and mapped 6 signals to corrospond with six servos, by using 3 generators, with 2 channels each.
 
@@ -36,38 +36,38 @@ NRF5340 has 4 pwm generators each with four channels I made a overlay file and m
       status = "okay";
       wms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
     };
-     
+
     pwm_beta: pwm_beta{
       status = "okay";
       pwms = <&pwm0 1 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
    };
-    
+
     pwm_gamma: pwm_gamma{
       status = "okay";
       pwms = <&pwm1 0 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
    };
-    
+
     pwm_delta: pwm_delta{
       status = "okay";
     pwms = <&pwm1 1 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
    };
-    
+
     pwm_epsilon: pwm_epsilon{
       status = "okay";
     pwms = <&pwm2 0 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
     };
-    
+
     pwm_zeta: pwm_zeta{
       status = "okay";
     pwms = <&pwm2 1 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
     };
   };
-} 
+}
 ```
 
 Then I outputted each PWM signal to pins 1.4 - 1.9
 
-``` c
+```c
 &pwm0_default {
   group1 {
   psels = <NRF_PSEL(PWM_OUT0, 1, 4)>, <NRF_PSEL(PWM_OUT1, 1, 5)>;
@@ -87,16 +87,18 @@ Then I outputted each PWM signal to pins 1.4 - 1.9
     };
   };
 };
- 
+
 ```
 
 ### Testing Servos
-![six servos running at different frequencies ](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjQyZjVkYTVmZTBjOTE5MDQ5ZTBiMGU0MDlmZWJmZGYyYWVlYzQ4ZCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/ipcfquEn4nh2js0gJn/giphy.gif)
+
+![](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjQyZjVkYTVmZTBjOTE5MDQ5ZTBiMGU0MDlmZWJmZGYyYWVlYzQ4ZCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/ipcfquEn4nh2js0gJn/giphy.gif)
+
 Once I had the device tree configured I went on to test each servo could run inpendantly.
 The pulse width ran form 1000-2000, representing 0-90degrees.
 First I organised each pwm signal into a array of servo data
 
-``` c
+```c
 typedef struct {
   const struct pwm_dt_spec name;
   uint32_t pulse;
@@ -143,7 +145,7 @@ Then in the main loop I put in two angles values for the servos to switch betwee
 
 once all servo pulses have been store I set the servos and waited before repeating the loop
 
-``` c
+```c
 set_Servos(servos);
 k_sleep(K_SECONDS(SLEEP_TIME_S));
 ```
