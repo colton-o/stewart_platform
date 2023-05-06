@@ -70,7 +70,7 @@ void main(void) {
       servos[4].pulse = angle_to_pulse(30);
 
     if (servos[5].pulse == angle_to_pulse(45))
-      servos[5].pulse = angle_to_pulse(40);
+      servos[5].pulse = angle_to_pulse(0);
     else
       servos[5].pulse = angle_to_pulse(45);
 

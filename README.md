@@ -91,9 +91,9 @@ Then I outputted each PWM signal to pins 1.4 - 1.9
 ```
 
 ### Testing Servos
-
+![six servos running at different frequencies ](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjQyZjVkYTVmZTBjOTE5MDQ5ZTBiMGU0MDlmZWJmZGYyYWVlYzQ4ZCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/ipcfquEn4nh2js0gJn/giphy.gif)
 Once I had the device tree configured I went on to test each servo could run inpendantly.
-The pulse width ran form 1000-2000, representinf 0-90degrees.
+The pulse width ran form 1000-2000, representing 0-90degrees.
 First I organised each pwm signal into a array of servo data
 
 ``` c
