@@ -149,3 +149,7 @@ once all servo pulses have been store I set the servos and waited before repeati
 set_Servos(servos);
 k_sleep(K_SECONDS(SLEEP_TIME_S));
 ```
+
+### Prototype
+![servos](documentation/photo.jpeg)
+prototype with some hexagons and blue-tack 
