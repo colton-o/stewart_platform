@@ -151,5 +151,6 @@ k_sleep(K_SECONDS(SLEEP_TIME_S));
 ```
 
 ### Prototype
-![servos](documentation/platform_01.jpeg)
+![platform prototype](documentation/platform_01.jpeg)
+
 prototype with some hexagons and blue-tack 
