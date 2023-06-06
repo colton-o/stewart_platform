@@ -8,14 +8,14 @@
 
 // setting period of motor to 50htz
 #define PERIOD (USEC_PER_SEC / 50U)
-#define STEP 25
+#define STEP 250
 #define MINPULSE 1000
 #define MAXPULSE 2000
 #define MIDPULSE 1500
 #define SLEEP_TIME_S 1
 #define SERVO_NUM 6
 #define RECEIVE_TIMEOUT 100
-#define RX_BUFFER_SIZE 10
+#define RX_BUFFER_SIZE 1000
 
 static uint8_t rx_buffer[RX_BUFFER_SIZE] = {0};
 static uint8_t tx_buffer[] = "we doin uart \n\r";
@@ -33,7 +33,7 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE, 1}};
 
 void set_Servos(servo *servos) {
-  printk("Settign Servos");
+  printk("Settign Servos\n");
   for (int i = 0; i < SERVO_NUM; i++) {
     pwm_set(servos[i].name.dev, servos[i].name.channel, PWM_USEC(PERIOD),
             PWM_USEC(servos[i].pulse), 0);
@@ -52,17 +52,49 @@ static void callback_uart(const struct device *dev, struct uart_event *evt,
   case UART_RX_RDY:
     if ((evt->data.rx.len) == 1) {
       switch (evt->data.rx.buf[evt->data.rx.offset]) {
-      case 'q':
+      case 'w':
         for (int i = 0; i < 6; i++)
           servos[i].pulse += STEP;
         set_Servos(servos);
         break;
-      case 'w':
+      case 's':
         for (int i = 0; i < 6; i++)
           servos[i].pulse -= STEP;
         set_Servos(servos);
         break;
+
+      case 'a':
+        for (int i = 0; i < 3; i++)
+          servos[i].pulse += STEP;
+        for (int i = 3; i < 6; i++)
+          servos[i].pulse -= STEP;
+        set_Servos(servos);
+        break;
+
+      case 'd':
+        for (int i = 0; i < 3; i++)
+          servos[i].pulse -= STEP;
+        for (int i = 3; i < 6; i++)
+          servos[i].pulse += STEP;
+        set_Servos(servos);
+        break;
+
+      case 'q':
+        break;
+      case 'u':
+        break;
+      case 'j':
+        break;
+      case 'h':
+        break;
+      case 'k':
+        break;
+      case 'y':
+        break;
+      case 'i':
+        break;
       }
+      printk("%d\n", evt->data.rx.buf[evt->data.rx.offset]);
     }
     break;
   case UART_RX_DISABLED:
