@@ -9,8 +9,8 @@
 // setting period of motor to 50htz
 #define PERIOD (USEC_PER_SEC / 50U)
 #define STEP 250
-#define MINPULSE 1000
-#define MAXPULSE 2000
+#define MINPULSE 500
+#define MAXPULSE 2500
 #define MIDPULSE 1500
 #define SLEEP_TIME_S 1
 #define SERVO_NUM 6
@@ -33,10 +33,14 @@ servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE, 1}};
 
 void set_Servos(servo *servos) {
-  printk("Settign Servos\n");
   for (int i = 0; i < SERVO_NUM; i++) {
+    if (servos[i].pulse > MAXPULSE)
+      servos[i].pulse = MAXPULSE;
+    else if (servos[i].pulse < MINPULSE)
+      servos[i].pulse = MINPULSE;
     pwm_set(servos[i].name.dev, servos[i].name.channel, PWM_USEC(PERIOD),
             PWM_USEC(servos[i].pulse), 0);
+    printk("%d = %d \n", i, servos[i].pulse);
   }
 }
 
@@ -54,44 +58,68 @@ static void callback_uart(const struct device *dev, struct uart_event *evt,
       switch (evt->data.rx.buf[evt->data.rx.offset]) {
       case 'w':
         for (int i = 0; i < 6; i++)
-          servos[i].pulse += STEP;
+          servos[i].pulse = MIDPULSE;
         set_Servos(servos);
         break;
       case 's':
-        for (int i = 0; i < 6; i++)
-          servos[i].pulse -= STEP;
+        for (int i = 0; i < 6; i += 2)
+          servos[i].pulse = MINPULSE;
+        for (int i = 1; i < 6; i += 2)
+          servos[i].pulse = MAXPULSE;
         set_Servos(servos);
         break;
 
       case 'a':
-        for (int i = 0; i < 3; i++)
-          servos[i].pulse += STEP;
-        for (int i = 3; i < 6; i++)
-          servos[i].pulse -= STEP;
+        servos[3].pulse += STEP;
+        servos[4].pulse += STEP;
         set_Servos(servos);
         break;
 
       case 'd':
-        for (int i = 0; i < 3; i++)
-          servos[i].pulse -= STEP;
-        for (int i = 3; i < 6; i++)
-          servos[i].pulse += STEP;
+        servos[3].pulse -= STEP;
+        servos[4].pulse -= STEP;
         set_Servos(servos);
         break;
 
-      case 'q':
+      case '1':
+        servos[0].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'u':
+      case '2':
+        servos[1].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'j':
+      case '3':
+        servos[2].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'h':
+      case '4':
+        servos[3].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'k':
+      case '5':
+        servos[4].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'y':
+      case '6':
+        servos[5].pulse += STEP;
+        set_Servos(servos);
         break;
-      case 'i':
+
+      case '0':
+        for (int i = 0; i < 6; i++)
+          servos[i].pulse = MINPULSE;
+        set_Servos(servos);
+        break;
+      case '9':
+        for (int i = 0; i < 6; i++)
+          servos[i].pulse = MAXPULSE;
+        set_Servos(servos);
+        break;
+      case '8':
+        for (int i = 0; i < 6; i++)
+          servos[i].pulse = MIDPULSE;
+        set_Servos(servos);
         break;
       }
       printk("%d\n", evt->data.rx.buf[evt->data.rx.offset]);

@@ -154,3 +154,22 @@ k_sleep(K_SECONDS(SLEEP_TIME_S));
 ![platform prototype](documentation/platform_01.jpeg)
 
 prototype with some hexagons and blue-tack 
+
+after adjusting the fit I implemented uart to test the movement, this also allows the pulse of each servo to be adusted through events as opped to a continousloop
+```c
+    if ((evt->data.rx.len) == 1) {
+      switch (evt->data.rx.buf[evt->data.rx.offset]) {
+      case 'w':
+        for (int i = 0; i < 6; i++)
+          servos[i].pulse = MIDPULSE;
+        set_Servos(servos);
+        break;
+      case 's':
+        for (int i = 0; i < 6; i += 2)
+          servos[i].pulse = MINPULSE;
+        for (int i = 1; i < 6; i += 2)
+          servos[i].pulse = MAXPULSE;
+        set_Servos(servos);
+        break;
+    }
+```
