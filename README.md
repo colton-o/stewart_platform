@@ -173,3 +173,5 @@ after adjusting the fit I implemented uart to test the movement, this also allow
         break;
     }
 ```
+![servos](documentation/platform_proto.gif)
+
