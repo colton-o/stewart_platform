@@ -67,6 +67,30 @@
         delta = &pwm_delta;
         epsilon = &pwm_epsilon;
         zeta = &pwm_zeta;
+        
+    
+        north = &{/joystick/north/};
+        south = &{/joystick/south/};
+        east = &{/joystick/east/};
+        west = &{/joystick/west/};
+    };
+
+
+    joystick {
+        compatible = "gpio-keys";
+        north {
+            gpios = <&gpio0 26 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+        south {
+            gpios = <&gpio0 25 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+        west {
+            gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+
+        east {
+            gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
     };
 };
 
@@ -93,5 +117,16 @@
             psels = <NRF_PSEL(PWM_OUT0, 1, 8)>, <NRF_PSEL(PWM_OUT1, 1, 9)>;
         };
     };
+
+    
+
+    
 };
 /delete-node/ &{/pin-controller/pwm0_sleep/group1/};
+
+
+
+
+
+
+

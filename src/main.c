@@ -8,7 +8,7 @@
 
 // setting period of motor to 50htz
 #define PERIOD (USEC_PER_SEC / 50U)
-#define STEP 250
+#define STEP 200
 #define MINPULSE 500
 #define MAXPULSE 2500
 #define MIDPULSE 1500
@@ -20,17 +20,41 @@
 static uint8_t rx_buffer[RX_BUFFER_SIZE] = {0};
 static uint8_t tx_buffer[] = "we doin uart \n\r";
 const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
+
 typedef struct {
   const struct pwm_dt_spec name;
   uint32_t pulse;
   int direction;
 } servo;
+
 servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(beta)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(gamma)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(delta)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE, 1},
                            {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE, 1}};
+
+static const struct gpio_dt_spec btn_01 =
+    GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
+static struct gpio_callback btn_01_cb;
+static const struct gpio_dt_spec btn_02 =
+    GPIO_DT_SPEC_GET(DT_ALIAS(sw1), gpios);
+static struct gpio_callback btn_02_cb;
+static const struct gpio_dt_spec joy_north =
+    GPIO_DT_SPEC_GET(DT_ALIAS(north), gpios);
+static struct gpio_callback joy_north_cb;
+
+static const struct gpio_dt_spec joy_south =
+    GPIO_DT_SPEC_GET(DT_ALIAS(south), gpios);
+static struct gpio_callback joy_south_cb;
+
+static const struct gpio_dt_spec joy_east =
+    GPIO_DT_SPEC_GET(DT_ALIAS(east), gpios);
+static struct gpio_callback joy_east_cb;
+
+static const struct gpio_dt_spec joy_west =
+    GPIO_DT_SPEC_GET(DT_ALIAS(west), gpios);
+static struct gpio_callback joy_west_cb;
 
 void set_Servos(servo *servos) {
   for (int i = 0; i < SERVO_NUM; i++) {
@@ -42,6 +66,31 @@ void set_Servos(servo *servos) {
             PWM_USEC(servos[i].pulse), 0);
     printk("%d = %d \n", i, servos[i].pulse);
   }
+}
+
+void north_test(const struct device *dev, struct gpio_callback *cb,
+                uint32_t pins) {
+  printk("north test \n");
+  for (int i = 0; i < 6; i++)
+    servos[i].pulse = MIDPULSE;
+  set_Servos(servos);
+}
+void south_test(const struct device *dev, struct gpio_callback *cb,
+                uint32_t pins) {
+  printk("south test \n");
+  for (int i = 0; i < 6; i += 2)
+    servos[i].pulse = MINPULSE;
+  for (int i = 1; i < 6; i += 2)
+    servos[i].pulse = MAXPULSE;
+  set_Servos(servos);
+}
+void east_test(const struct device *dev, struct gpio_callback *cb,
+               uint32_t pins) {
+  printk("east test \n");
+}
+void west_test(const struct device *dev, struct gpio_callback *cb,
+               uint32_t pins) {
+  printk("west test \n");
 }
 
 uint32_t angle_to_pulse(uint8_t angle) {
@@ -113,7 +162,7 @@ static void callback_uart(const struct device *dev, struct uart_event *evt,
         break;
       case '9':
         for (int i = 0; i < 6; i++)
-          servos[i].pulse = MAXPULSE;
+          servos[i].pulse = MINPULSE;
         set_Servos(servos);
         break;
       case '8':
@@ -132,6 +181,7 @@ static void callback_uart(const struct device *dev, struct uart_event *evt,
     break;
   }
 }
+
 void main(void) {
   printk("lets begin \n");
   set_Servos(servos);
@@ -143,4 +193,34 @@ void main(void) {
     printk("no uart device");
   else
     printk("we got uart");
+
+  gpio_pin_configure_dt(&joy_north, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&joy_north, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&joy_north_cb, north_test, BIT(joy_north.pin));
+  gpio_add_callback(joy_north.port, &joy_north_cb);
+
+  gpio_pin_configure_dt(&joy_south, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&joy_south, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&joy_south_cb, south_test, BIT(joy_south.pin));
+  gpio_add_callback(joy_south.port, &joy_south_cb);
+
+  gpio_pin_configure_dt(&joy_east, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&joy_east, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&joy_east_cb, east_test, BIT(joy_east.pin));
+  gpio_add_callback(joy_east.port, &joy_east_cb);
+
+  gpio_pin_configure_dt(&joy_west, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&joy_west, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&joy_west_cb, west_test, BIT(joy_west.pin));
+  gpio_add_callback(joy_west.port, &joy_west_cb);
+
+  gpio_pin_configure_dt(&btn_01, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&btn_01, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&btn_01_cb, west_test, BIT(btn_01.pin));
+  gpio_add_callback(btn_01.port, &btn_01_cb);
+
+  gpio_pin_configure_dt(&btn_02, GPIO_INPUT);
+  gpio_pin_interrupt_configure_dt(&btn_02, GPIO_INT_EDGE_TO_ACTIVE);
+  gpio_init_callback(&btn_02_cb, west_test, BIT(btn_02.pin));
+  gpio_add_callback(btn_02.port, &btn_02_cb);
 }
