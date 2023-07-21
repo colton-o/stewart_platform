@@ -8,7 +8,7 @@
 
 // setting period of motor to 50htz
 #define PERIOD (USEC_PER_SEC / 50U)
-#define STEP 200
+#define STEP 20
 #define MINPULSE 500
 #define MAXPULSE 2500
 #define MIDPULSE 1500
@@ -27,34 +27,28 @@ typedef struct {
   int direction;
 } servo;
 
-servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MINPULSE, 1},
-                           {PWM_DT_SPEC_GET(DT_ALIAS(beta)), MINPULSE, 1},
-                           {PWM_DT_SPEC_GET(DT_ALIAS(gamma)), MINPULSE, 1},
-                           {PWM_DT_SPEC_GET(DT_ALIAS(delta)), MINPULSE, 1},
-                           {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MINPULSE, 1},
-                           {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MINPULSE, 1}};
+servo servos[SERVO_NUM] = {{PWM_DT_SPEC_GET(DT_ALIAS(alpha)), MIDPULSE, 1},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(beta)), MIDPULSE, 1},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(gamma)), MIDPULSE, 1},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(delta)), MIDPULSE, 1},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(epsilon)), MIDPULSE, 1},
+                           {PWM_DT_SPEC_GET(DT_ALIAS(zeta)), MIDPULSE, 1}};
 
 static const struct gpio_dt_spec btn_01 =
     GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
-static struct gpio_callback btn_01_cb;
 static const struct gpio_dt_spec btn_02 =
     GPIO_DT_SPEC_GET(DT_ALIAS(sw1), gpios);
-static struct gpio_callback btn_02_cb;
 static const struct gpio_dt_spec joy_north =
     GPIO_DT_SPEC_GET(DT_ALIAS(north), gpios);
-static struct gpio_callback joy_north_cb;
 
 static const struct gpio_dt_spec joy_south =
     GPIO_DT_SPEC_GET(DT_ALIAS(south), gpios);
-static struct gpio_callback joy_south_cb;
 
 static const struct gpio_dt_spec joy_east =
     GPIO_DT_SPEC_GET(DT_ALIAS(east), gpios);
-static struct gpio_callback joy_east_cb;
 
 static const struct gpio_dt_spec joy_west =
     GPIO_DT_SPEC_GET(DT_ALIAS(west), gpios);
-static struct gpio_callback joy_west_cb;
 
 void set_Servos(servo *servos) {
   for (int i = 0; i < SERVO_NUM; i++) {
@@ -68,159 +62,185 @@ void set_Servos(servo *servos) {
   }
 }
 
-void north_test(const struct device *dev, struct gpio_callback *cb,
-                uint32_t pins) {
-  printk("north test \n");
-  for (int i = 0; i < 6; i++)
-    servos[i].pulse = MIDPULSE;
-  set_Servos(servos);
+void up() { 
+    for (int i = 0; i < 6; i++){
+        if(servos[i].pulse != MIDPULSE){
+            if(i%2 == 0)
+                servos[i].pulse += STEP;
+            else
+                servos[i].pulse -= STEP;
+        }
+        set_Servos(servos);
+    }
 }
-void south_test(const struct device *dev, struct gpio_callback *cb,
-                uint32_t pins) {
+void down() {
   printk("south test \n");
-  for (int i = 0; i < 6; i += 2)
-    servos[i].pulse = MINPULSE;
-  for (int i = 1; i < 6; i += 2)
-    servos[i].pulse = MAXPULSE;
+  for (int i = 0; i < 6; i += 2){
+    if (servos[i].pulse != MINPULSE)
+        servos[i].pulse -= STEP/2;
+  }
+ 
+  for (int i = 1; i < 6; i += 2){
+    if(servos[i].pulse != MAXPULSE)
+        servos[i].pulse += STEP/2;
+  }
   set_Servos(servos);
 }
-void east_test(const struct device *dev, struct gpio_callback *cb,
-               uint32_t pins) {
-  printk("east test \n");
+void north(){
+    servos[1].pulse += STEP;
+    servos[2].pulse += STEP;
+    servos[3].pulse -= STEP;
+    servos[4].pulse -= STEP;
+    set_Servos(servos);
 }
-void west_test(const struct device *dev, struct gpio_callback *cb,
-               uint32_t pins) {
-  printk("west test \n");
+void south(){
+    servos[1].pulse -= STEP;
+    servos[2].pulse -= STEP;
+    servos[3].pulse += STEP;
+    servos[4].pulse += STEP;
+    set_Servos(servos);
 }
-
+void east(){
+    servos[0].pulse -= STEP;
+    servos[5].pulse -= STEP;
+    set_Servos(servos);
+}
+void west(){
+    servos[0].pulse += STEP;
+    servos[5].pulse += STEP;
+    set_Servos(servos);
+}
 uint32_t angle_to_pulse(uint8_t angle) {
-  float angle_pct = ((float)angle / 180.0f);
-  uint32_t pulse = MINPULSE + (angle_pct * (MAXPULSE - MINPULSE));
-  return pulse;
+    float angle_pct = ((float)angle / 180.0f);
+    uint32_t pulse = MINPULSE + (angle_pct * (MAXPULSE - MINPULSE));
+    return pulse;
 }
 
 static void callback_uart(const struct device *dev, struct uart_event *evt,
                           void *user_data) {
-  switch (evt->type) {
-  case UART_RX_RDY:
-    if ((evt->data.rx.len) == 1) {
-      switch (evt->data.rx.buf[evt->data.rx.offset]) {
-      case 'w':
-        for (int i = 0; i < 6; i++)
-          servos[i].pulse = MIDPULSE;
-        set_Servos(servos);
-        break;
-      case 's':
-        for (int i = 0; i < 6; i += 2)
-          servos[i].pulse = MINPULSE;
-        for (int i = 1; i < 6; i += 2)
-          servos[i].pulse = MAXPULSE;
-        set_Servos(servos);
-        break;
+    switch (evt->type) {
+        case UART_RX_RDY:
+            if ((evt->data.rx.len) == 1) {
+                switch (evt->data.rx.buf[evt->data.rx.offset]) {
+                    case 'w':
+                        for (int i = 0; i < 6; i++)
+                            servos[i].pulse = MIDPULSE;
+                        set_Servos(servos);
+                        break;
+                    case 's':
+                        for (int i = 0; i < 6; i += 2)
+                            servos[i].pulse = MINPULSE;
+                        for (int i = 1; i < 6; i += 2)
+                            servos[i].pulse = MAXPULSE;
+                        set_Servos(servos);
+                        break;
 
-      case 'a':
-        servos[3].pulse += STEP;
-        servos[4].pulse += STEP;
-        set_Servos(servos);
-        break;
+                    case 'a':
+                        servos[3].pulse += STEP;
+                        servos[4].pulse += STEP;
+                        set_Servos(servos);
+                        break;
 
-      case 'd':
-        servos[3].pulse -= STEP;
-        servos[4].pulse -= STEP;
-        set_Servos(servos);
-        break;
+                    case 'd':
+                        servos[3].pulse -= STEP;
+                        servos[4].pulse -= STEP;
+                        set_Servos(servos);
+                        break;
 
-      case '1':
-        servos[0].pulse += STEP;
-        set_Servos(servos);
-        break;
-      case '2':
-        servos[1].pulse += STEP;
-        set_Servos(servos);
-        break;
-      case '3':
-        servos[2].pulse += STEP;
-        set_Servos(servos);
-        break;
-      case '4':
-        servos[3].pulse += STEP;
-        set_Servos(servos);
-        break;
-      case '5':
-        servos[4].pulse += STEP;
-        set_Servos(servos);
-        break;
-      case '6':
-        servos[5].pulse += STEP;
-        set_Servos(servos);
-        break;
+                    case '1':
+                        servos[0].pulse += STEP;
+                        set_Servos(servos);
+                        break;
+                    case '2':
+                        servos[1].pulse += STEP;
+                        set_Servos(servos);
+                        break;
+                    case '3':
+                        servos[2].pulse += STEP;
+                        set_Servos(servos);
+                        break;
+                    case '4':
+                        servos[3].pulse += STEP;
+                        set_Servos(servos);
+                        break;
+                    case '5':
+                        servos[4].pulse += STEP;
+                        set_Servos(servos);
+                        break;
+                    case '6':
+                        servos[5].pulse += STEP;
+                        set_Servos(servos);
+                        break;
 
-      case '0':
-        for (int i = 0; i < 6; i++)
-          servos[i].pulse = MINPULSE;
-        set_Servos(servos);
-        break;
-      case '9':
-        for (int i = 0; i < 6; i++)
-          servos[i].pulse = MINPULSE;
-        set_Servos(servos);
-        break;
-      case '8':
-        for (int i = 0; i < 6; i++)
-          servos[i].pulse = MIDPULSE;
-        set_Servos(servos);
-        break;
-      }
-      printk("%d\n", evt->data.rx.buf[evt->data.rx.offset]);
+                    case '0':
+                        for (int i = 0; i < 6; i++)
+                            servos[i].pulse = MINPULSE;
+                        set_Servos(servos);
+                        break;
+                    case '9':
+                        for (int i = 0; i < 6; i++)
+                            servos[i].pulse = MINPULSE;
+                        set_Servos(servos);
+                        break;
+                    case '8':
+                        for (int i = 0; i < 6; i++)
+                            servos[i].pulse = MIDPULSE;
+                        set_Servos(servos);
+                        break;
+                }
+                printk("%d\n", evt->data.rx.buf[evt->data.rx.offset]);
+            }
+            break;
+        case UART_RX_DISABLED:
+            uart_rx_enable(dev, rx_buffer, sizeof rx_buffer, RECEIVE_TIMEOUT);
+            break;
+        default:
+            break;
     }
-    break;
-  case UART_RX_DISABLED:
-    uart_rx_enable(dev, rx_buffer, sizeof rx_buffer, RECEIVE_TIMEOUT);
-    break;
-  default:
-    break;
-  }
 }
 
 void main(void) {
-  printk("lets begin \n");
-  set_Servos(servos);
-  uart_callback_set(uart, callback_uart, NULL);
-  uart_tx(uart, tx_buffer, sizeof(tx_buffer), SYS_FOREVER_MS);
-  uart_rx_enable(uart, rx_buffer, sizeof(rx_buffer), RECEIVE_TIMEOUT);
+    printk("lets begin \n");
+    set_Servos(servos);
+    uart_callback_set(uart, callback_uart, NULL);
+    uart_tx(uart, tx_buffer, sizeof(tx_buffer), SYS_FOREVER_MS);
+    uart_rx_enable(uart, rx_buffer, sizeof(rx_buffer), RECEIVE_TIMEOUT);
 
-  if (!device_is_ready(uart))
-    printk("no uart device");
-  else
-    printk("we got uart");
+    if (!device_is_ready(uart))
+        printk("no uart device");
+    else
+        printk("we got uart");
 
-  gpio_pin_configure_dt(&joy_north, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&joy_north, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&joy_north_cb, north_test, BIT(joy_north.pin));
-  gpio_add_callback(joy_north.port, &joy_north_cb);
+    gpio_pin_configure_dt(&joy_north, GPIO_INPUT); 
+    gpio_pin_configure_dt(&joy_south, GPIO_INPUT);
+    gpio_pin_configure_dt(&joy_east, GPIO_INPUT);
+    gpio_pin_configure_dt(&joy_west, GPIO_INPUT);
+    gpio_pin_configure_dt(&btn_01, GPIO_INPUT);
+    gpio_pin_configure_dt(&btn_02, GPIO_INPUT);
 
-  gpio_pin_configure_dt(&joy_south, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&joy_south, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&joy_south_cb, south_test, BIT(joy_south.pin));
-  gpio_add_callback(joy_south.port, &joy_south_cb);
+    while (1){
+        if(gpio_pin_get_dt(&joy_north)){
+            if(gpio_pin_get_dt(&btn_01))
+                up();
+            else
+                north();
+        }
 
-  gpio_pin_configure_dt(&joy_east, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&joy_east, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&joy_east_cb, east_test, BIT(joy_east.pin));
-  gpio_add_callback(joy_east.port, &joy_east_cb);
-
-  gpio_pin_configure_dt(&joy_west, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&joy_west, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&joy_west_cb, west_test, BIT(joy_west.pin));
-  gpio_add_callback(joy_west.port, &joy_west_cb);
-
-  gpio_pin_configure_dt(&btn_01, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&btn_01, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&btn_01_cb, west_test, BIT(btn_01.pin));
-  gpio_add_callback(btn_01.port, &btn_01_cb);
-
-  gpio_pin_configure_dt(&btn_02, GPIO_INPUT);
-  gpio_pin_interrupt_configure_dt(&btn_02, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&btn_02_cb, west_test, BIT(btn_02.pin));
-  gpio_add_callback(btn_02.port, &btn_02_cb);
+        if(gpio_pin_get_dt(&joy_south)){
+            if(gpio_pin_get_dt(&btn_01))
+                down();
+            else
+                south();
+        }
+        if(gpio_pin_get_dt(&joy_west)){
+            west();
+            printk("west");
+        }
+        if(gpio_pin_get_dt(&joy_east)){
+            east();
+        }
+    }
 }
+
+
+
