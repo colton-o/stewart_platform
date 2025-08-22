@@ -4,9 +4,8 @@ Using this project as a way of becoming familiar with zephyr and the nrf5340.
 
 ## goals
 
-- use PWM signals and inverse kinimetics to make a stewart platform
-- Create controller using joystick and buttons as a peripherial
-- create a custom pcb with a nrf5340 chip to make the platform
+- use PWM signals  to make a functional stewart platform
+
 
 ## Production
 
